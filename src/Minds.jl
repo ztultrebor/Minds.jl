@@ -48,7 +48,7 @@ function backprop!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, l=1)
     return ∂C
 end
 
-function educate(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, l=1)
+function thoughtless_backprop(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, l=1)
     if l == length(mind.layers) - 1
         Z = softmax(mind.weights[l]*X .+ mind.biases[l])
         δ = (Z .- Y) / size(Z,2)
@@ -58,6 +58,20 @@ function educate(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, l=1)
     end
     dZ = max.(sign.(Z), 0)
     ∂C = mind.weights[l]' * (δ .* dZ)
+    return ∂C
+end
+
+function educate!(mind::Mind, teacher::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, l=1)
+    if l == length(mind.layers)
+        return thoughtless_backprop(teacher, X, Y, 1)
+    else
+        Z = relu(mind.weights[l]*X .+ mind.biases[l])
+        δ = backprop!(mind, Z, Y, l+1)
+    end
+    dZ = max.(sign.(Z), 0)
+    ∂C = mind.weights[l]' * (δ .* dZ)
+    mind.biases[l] .-= mind.λ * sum(δ, dims=2)
+    mind.weights[l] .-=  mind.λ * (δ * X')
     return ∂C
 end
 
