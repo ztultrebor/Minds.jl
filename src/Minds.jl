@@ -23,6 +23,8 @@ function Mind(layers; λ=0.01, a=relu, f=softmax)
 
 relu(X) = max.(X, 0)
 
+σ(X) = 1 ./ (1 .+ exp.(X))
+
 function d(f::Function)
     if f==relu
         df(Z) = max.(sign.(Z), 0)
