@@ -1,0 +1,4 @@
+name = "Minds"
+uuid = "5cbe44be-d1df-4b58-b32c-b06ae0957aeb"
+authors = ["Robert Lutz <robertlutzi@gmail.com>"]
+version = "0.1.0"
