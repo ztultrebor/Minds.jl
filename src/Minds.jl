@@ -123,8 +123,8 @@ function educate!(mind::Mind, teacher::Mind, X::Matrix{Float32}, Y::Matrix{Float
             y = Y[:, randindices]
             teaching_backprop!(mind, teacher, x, y, 1)
         end
-        push!(training_skorz, score(predict(mind, X), Y))
-        push!(test_skorz, score(predict(mind, X2), Y2))
+        push!(training_skorz, score(predict(teacher, predict(mind, X)), Y))
+        push!(test_skorz, score(predict(teacher, predict(mind, X2)), Y2))
     end
     return training_skorz, test_skorz
 end
