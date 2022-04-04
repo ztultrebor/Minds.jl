@@ -78,7 +78,9 @@ function batch(N, n)
     randomized_indices = [r[2] for r ∈ random_sort]
     chunks = Int(round(N//n))
     segmentation = N//chunks
-    return [Int(floor(segmentation*i)) for i ∈ 0:chunks]
+    begendices = [Int(floor(segmentation*i)) for i ∈ 0:chunks]
+    return [randomized_indices[a+1:b] for 
+            (a,b) ∈ zip(begendices[1:end-1].+1, begendices[2:end])]
 end
 
 function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32},  
@@ -86,10 +88,9 @@ function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32},
     training_skorz = []
     test_skorz = []
     for cycle ∈ 1:cycles
-        batchends = batch(size(X,2), 128)
-        for (i,j) in zip(batchends[1:end-1].+1, batchends[2:end])
-            x = X[:, i:j]
-            y = Y[:, i:j]
+        for randindices = batch(size(X,2), 128)
+            x = X[:, randindices]
+            y = Y[:, randindices]
             backprop!(mind, x, y, 1)
         end
         push!(training_skorz, score(predict(mind, X), Y))
