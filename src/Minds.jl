@@ -87,7 +87,7 @@ function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32},
         push!(training_skorz, score(predict(mind, X), Y))
         push!(test_skorz, score(predict(mind, X2), Y2))
     end
-    plot(hcat(training_skorz, test_skorz))
+    return training_skorz, test_skorz
 end
 
 end # module
