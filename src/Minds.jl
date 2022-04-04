@@ -7,24 +7,29 @@ mutable struct Mind
     weights::Vector{Matrix{Float32}}
     biases::Vector{Vector{Float32}}
     λ::Float32
+    a::Function
+    f::Function
+    da::Function
 end
 
-function Mind(layers)
+function Mind(layers; λ=0.01, a=relu, f=softmax)
     ws = Vector{Matrix{Float32}}(undef, length(layers)-1)
     bs = Vector{Vector{Float32}}(undef, length(layers)-1)
     for (i, (nin, nout)) in enumerate(zip(layers[1:end-1], layers[2:end]))
         ws[i] = randn(nout, nin) / √nin
         bs[i] = randn(nout)
     end
-    return Mind(layers, ws, bs, 0.01)
-end
+    return Mind(layers, ws, bs, λ, a, f, d(a))
 
 relu(X) = max.(X, 0)
 
 function d(f::Function)
     if f==relu
-        return max.(sign.(Z), 0)
+        df(Z) = max.(sign.(Z), 0)
+    elseif f == σ
+        df(Z) = Z .* (1 .- Z)
     end
+    return dF
 end
 
 function softmax(X)
