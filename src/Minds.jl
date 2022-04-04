@@ -20,6 +20,7 @@ function Mind(layers; λ=0.01, a=relu, f=softmax)
         bs[i] = randn(nout)
     end
     return Mind(layers, ws, bs, λ, a, f, d(a))
+end
 
 relu(X) = max.(X, 0)
 
