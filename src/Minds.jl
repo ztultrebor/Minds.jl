@@ -32,7 +32,7 @@ function d(f::Function)
     elseif f == σ
         df(Z) = Z .* (1 .- Z)
     end
-    return dF
+    return df
 end
 
 function softmax(X)
