@@ -121,7 +121,7 @@ function educate!(mind::Mind, teacher::Mind, X::Matrix{Float32}, Y::Matrix{Float
         for randindices = batch(size(X,2), 128)
             x = X[:, randindices]
             y = Y[:, randindices]
-            educate!(mind, teacher, x, y, 1)
+            teaching_backprop!(mind, teacher, x, y, 1)
         end
         push!(training_skorz, score(predict(mind, X), Y))
         push!(test_skorz, score(predict(mind, X2), Y2))
