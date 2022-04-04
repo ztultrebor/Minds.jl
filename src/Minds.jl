@@ -29,10 +29,11 @@ relu(X) = max.(X, 0)
 function d(f::Function)
     if f==relu
         df(Z) = max.(sign.(Z), 0)
+        return df
     elseif f == σ
         df(Z) = Z .* (1 .- Z)
+        return df
     end
-    return df
 end
 
 function softmax(X)
