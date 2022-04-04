@@ -73,15 +73,23 @@ end
 
 score(P::Matrix{Float32}, Y::Matrix{Float32}) = -sum(Y .* log.(P .+ eps())) / size(Y,2)
 
+function batch(N, n)
+    random_sort = sort!([(rand(),i) for i ∈ 1:N])
+    randomized_indices = [r[2] for r ∈ random_sort]
+    chunks = Int(round(N//n))
+    segmentation = N//chunks
+    return [Int(floor(segmentation*i)) for i ∈ 0:chunks]
+end
 
 function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32},  
                 X2::Matrix{Float32}, Y2::Matrix{Float32}, cycles::Int)
     training_skorz = []
     test_skorz = []
     for cycle ∈ 1:cycles
-        for goop in 1:300
-            x = X[:, 100*(goop-1)+1:100*goop]
-            y = Y[:, 100*(goop-1)+1:100*goop]
+        batchends = batch(size(X,2), 128)
+        for (i,j) in zip(batchends[1:end-1].+1, batchends[2:end])
+            x = X[:, i:j]
+            y = Y[:, i:j]
             backprop!(mind, x, y, 1)
         end
         push!(training_skorz, score(predict(mind, X), Y))
