@@ -113,4 +113,20 @@ function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32},
     return training_skorz, test_skorz
 end
 
+function teach!(mind::Mind, teacher::Mind, X::Matrix{Float32}, Y::Matrix{Float32},  
+    X2::Matrix{Float32}, Y2::Matrix{Float32}, cycles::Int)
+    training_skorz = []
+    test_skorz = []
+    for cycle ∈ 1:cycles
+        for randindices = batch(size(X,2), 128)
+            x = X[:, randindices]
+            y = Y[:, randindices]
+            educate!(mind, teacher, x, y, 1)
+        end
+        push!(training_skorz, score(predict(mind, X), Y))
+        push!(test_skorz, score(predict(mind, X2), Y2))
+    end
+    return training_skorz, test_skorz
+end
+
 end # module
