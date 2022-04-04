@@ -61,12 +61,12 @@ function thoughtless_backprop(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}
     return ∂C
 end
 
-function educate!(mind::Mind, teacher::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, l=1)
+function teaching_backprop!(mind::Mind, teacher::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, l=1)
     if l == length(mind.layers)
         return thoughtless_backprop(teacher, X, Y, 1)
     else
         Z = relu(mind.weights[l]*X .+ mind.biases[l])
-        δ = backprop!(mind, Z, Y, l+1)
+        δ = teaching_backprop!(mind, teacher, Z, Y, l+1)
     end
     dZ = max.(sign.(Z), 0)
     ∂C = mind.weights[l]' * (δ .* dZ)
@@ -113,7 +113,7 @@ function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32},
     return training_skorz, test_skorz
 end
 
-function teach!(mind::Mind, teacher::Mind, X::Matrix{Float32}, Y::Matrix{Float32},  
+function educate!(mind::Mind, teacher::Mind, X::Matrix{Float32}, Y::Matrix{Float32},  
     X2::Matrix{Float32}, Y2::Matrix{Float32}, cycles::Int)
     training_skorz = []
     test_skorz = []
