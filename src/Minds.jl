@@ -74,10 +74,11 @@ end
 score(P::Matrix{Float32}, Y::Matrix{Float32}) = -sum(Y .* log.(P .+ eps())) / size(Y,2)
 
 
-function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32},  X2::Matrix{Float32}, Y2::Matrix{Float32})
+function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32},  
+                X2::Matrix{Float32}, Y2::Matrix{Float32}, cycles::Int)
     training_skorz = []
     test_skorz = []
-    for cycle ∈ 1:512
+    for cycle ∈ 1:cycles
         for goop in 1:300
             x = X[:, 100*(goop-1)+1:100*goop]
             y = Y[:, 100*(goop-1)+1:100*goop]
