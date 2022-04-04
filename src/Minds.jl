@@ -24,7 +24,7 @@ end
 
 relu(X) = max.(X, 0)
 
-σ(X) = 1 ./ (1 .+ exp.(X))
+σ(X) = 1 ./ (1 .+ exp.(-X))
 
 function d(f::Function)
     if f==relu
