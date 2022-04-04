@@ -1,5 +1,7 @@
 module Minds
 
+export Mind, learn!, predict
+
 mutable struct Mind
     layers::Vector{Int}
     weights::Vector{Matrix{Float32}}
