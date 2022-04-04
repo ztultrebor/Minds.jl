@@ -48,7 +48,7 @@ function backprop!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, l=1)
         Z = relu(mind.weights[l]*X .+ mind.biases[l])
         δ = backprop!(mind, Z, Y, l+1)
     end
-    dZ = max.(sign.(Z), 0)
+    dZ = df(Z)
     ∂C = mind.weights[l]' * (δ .* dZ)
     mind.biases[l] .-= mind.λ * sum(δ, dims=2)
     mind.weights[l] .-=  mind.λ * (δ * X')
@@ -63,7 +63,7 @@ function thoughtless_backprop(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}
         Z = relu(mind.weights[l]*X .+ mind.biases[l])
         δ = backprop!(mind, Z, Y, l+1)
     end
-    dZ = max.(sign.(Z), 0)
+    dZ = df(Z)
     ∂C = mind.weights[l]' * (δ .* dZ)
     return ∂C
 end
@@ -75,7 +75,7 @@ function teaching_backprop!(mind::Mind, teacher::Mind, X::Matrix{Float32}, Y::Ma
         Z = relu(mind.weights[l]*X .+ mind.biases[l])
         δ = teaching_backprop!(mind, teacher, Z, Y, l+1)
     end
-    dZ = max.(sign.(Z), 0)
+    dZ = df(Z)
     ∂C = mind.weights[l]' * (δ .* dZ)
     mind.biases[l] .-= mind.λ * sum(δ, dims=2)
     mind.weights[l] .-=  mind.λ * (δ * X')
