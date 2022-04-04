@@ -1,6 +1,6 @@
 module Minds
 
-export Mind, learn!, predict
+export Mind, learn!, predict, educate!
 
 mutable struct Mind
     layers::Vector{Int}
