@@ -28,11 +28,11 @@ relu(X) = max.(X, 0)
 
 function d(f::Function)
     if f==relu
-        df(Z) = max.(sign.(Z), 0)
-        return df
+        drelu(Z) = max.(sign.(Z), 0)
+        return drelu
     elseif f == σ
-        df(Z) = Z .* (1 .- Z)
-        return df
+        dσ(Z) = Z .* (1 .- Z)
+        return dσ
     end
 end
 
