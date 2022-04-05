@@ -1,25 +1,52 @@
 module Minds
 
-export Mind, learn!, predict, educate!, relu, σ, softmax
+export Mind, learn!, predict, relu, σ, softmax, cross_entropy
 
-mutable struct Mind
-    layers::Vector{Int}
-    weights::Vector{Matrix{Float32}}
-    biases::Vector{Vector{Float32}}
-    λ::Float32
-    a::Function
-    f::Function
-    da::Function
+
+abstract type Layer
 end
 
-function Mind(layers; λ=0.01, a=relu, f=softmax)
-    ws = Vector{Matrix{Float32}}(undef, length(layers)-1)
-    bs = Vector{Vector{Float32}}(undef, length(layers)-1)
-    for (i, (nin, nout)) in enumerate(zip(layers[1:end-1], layers[2:end]))
+mutable struct InputLayer <: Layer
+    nodes::Int
+end
+
+mutable struct OutputLayer <: Layer
+    nodes::Int
+    f::Function
+    score::Function
+    df::Function
+    learning::Bool
+    λ::Float32
+end
+OutputLayer(n, f, score, learning=true, λ=0.01) = OutputLayer(n, f, score, (P,Y)->((P .- Y) / size(P,2)), learning, λ)
+
+
+mutable struct HiddenLayer <: Layer
+    nodes::Int
+    f::Function
+    df::Function
+    learning::Bool
+    λ::Float32
+end
+HiddenLayer(n, f, learning=true, λ=0.01) = HiddenLayer(n, f, Z->d(f)(Z), learning, λ)
+
+mutable struct Mind
+    layers::Vector{Layer}
+    weights::Vector{Matrix{Float32}}
+    biases::Vector{Vector{Float32}}
+end
+
+function Mind(layers)
+    l =  length(layers) - 1
+    ws = Vector{Matrix{Float32}}(undef,l)
+    bs = Vector{Vector{Float32}}(undef, l)
+    for i ∈ 1:l
+        nout = layers[i+1].nodes 
+        nin = layers[i].nodes 
         ws[i] = randn(nout, nin) / √nin
         bs[i] = randn(nout)
     end
-    return Mind(layers, ws, bs, λ, a, f, d(a))
+    return Mind(layers, ws, bs)
 end
 
 relu(X) = max.(X, 0)
@@ -43,61 +70,37 @@ function softmax(X)
 end
 
 function backprop!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, l=1)
-    if l == length(mind.layers) - 1
-        Z = mind.f(mind.weights[l]*X .+ mind.biases[l])
-        δ = (Z .- Y) / size(Z,2)
+    if typeof(mind.layers[l]) == InputLayer 
+        return backprop!(mind, X, Y, l+1)
+    elseif typeof(mind.layers[l]) == OutputLayer 
+        Z = mind.layers[l].f(mind.weights[l-1]*X .+ mind.biases[l-1])
+        δ = mind.layers[l].df(Z, Y)
         dZ = 1
     else
-        Z = mind.a(mind.weights[l]*X .+ mind.biases[l])
+        Z = mind.layers[l].f(mind.weights[l-1]*X .+ mind.biases[l-1])
         δ = backprop!(mind, Z, Y, l+1)
-        dZ = mind.da(Z)
+        dZ = mind.layers[l].df(Z)
     end
-    ∂C = mind.weights[l]' * (δ .* dZ)
-    mind.biases[l] .-= mind.λ * sum(δ, dims=2)
-    mind.weights[l] .-=  mind.λ * (δ * X')
+    ∂C = mind.weights[l-1]' * (δ .* dZ)
+    if mind.layers[l].learning
+        mind.biases[l-1] .-= mind.layers[l].λ * sum(δ, dims=2)
+        mind.weights[l-1] .-=  mind.layers[l].λ * (δ * X')
+    end
     return ∂C
 end
-
-function thoughtless_backprop(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, l=1)
-    if l == length(mind.layers) - 1
-        Z = mind.f(mind.weights[l]*X .+ mind.biases[l])
-        δ = (Z .- Y) / size(Z,2)
-        dZ = 1
-    else
-        Z = mind.a(mind.weights[l]*X .+ mind.biases[l])
-        δ = backprop!(mind, Z, Y, l+1)
-        dZ = mind.da(Z)
-    end
-    ∂C = mind.weights[l]' * (δ .* dZ)
-    return ∂C
-end
-
-function teaching_backprop!(mind::Mind, teacher::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, l=1)
-    if l == length(mind.layers)
-        return thoughtless_backprop(teacher, X, Y, 1)
-    else
-        Z = mind.a(mind.weights[l]*X .+ mind.biases[l])
-        δ = teaching_backprop!(mind, teacher, Z, Y, l+1)
-        dZ =mind.da(Z)
-        ∂C = mind.weights[l]' * (δ .* dZ)
-        mind.biases[l] .-= mind.λ * sum(δ, dims=2)
-        mind.weights[l] .-=  mind.λ * (δ * X')
-        return ∂C
-    end
-end
-
-
 
 function predict(mind::Mind, X::Matrix{Float32}, l=1)
-    if l == length(mind.layers)-1
-        return mind.f(mind.weights[l]*X .+ mind.biases[l])
+    if typeof(mind.layers[l]) == InputLayer 
+        return predict(mind, X, l+1)
+    elseif typeof(mind.layers[l]) == OutputLayer 
+        return mind.layers[l].f(mind.weights[l-1]*X .+ mind.biases[l-1])
     else
-        Z = mind.a(mind.weights[l]*X .+ mind.biases[l])
+        Z = mind.layers[l].f(mind.weights[l-1]*X .+ mind.biases[l-1])
         return predict(mind, Z, l+1)
     end
 end
 
-score(P::Matrix{Float32}, Y::Matrix{Float32}) = -sum(Y .* log.(P .+ eps())) / size(Y,2)
+cross_entropy(P::Matrix{Float32}, Y::Matrix{Float32}) = -sum(Y .* log.(P .+ eps())) / size(Y,2)
 
 function batch(N, n)
     random_sort = sort!([(rand(),i) for i ∈ 1:N])
@@ -119,24 +122,8 @@ function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32},
             y = Y[:, randindices]
             backprop!(mind, x, y, 1)
         end
-        push!(training_skorz, score(predict(mind, X), Y))
-        push!(test_skorz, score(predict(mind, X2), Y2))
-    end
-    return training_skorz, test_skorz
-end
-
-function educate!(mind::Mind, teacher::Mind, X::Matrix{Float32}, Y::Matrix{Float32},  
-    X2::Matrix{Float32}, Y2::Matrix{Float32}, cycles::Int)
-    training_skorz = []
-    test_skorz = []
-    for cycle ∈ 1:cycles
-        for randindices = batch(size(X,2), 128)
-            x = X[:, randindices]
-            y = Y[:, randindices]
-            teaching_backprop!(mind, teacher, x, y, 1)
-        end
-        push!(training_skorz, score(predict(teacher, predict(mind, X)), Y))
-        push!(test_skorz, score(predict(teacher, predict(mind, X2)), Y2))
+        push!(training_skorz, mind.layers[end].score(predict(mind, X), Y))
+        push!(test_skorz, mind.layers[end].score(predict(mind, X2), Y2))
     end
     return training_skorz, test_skorz
 end
