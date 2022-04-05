@@ -74,18 +74,18 @@ end
 
 function teaching_backprop!(mind::Mind, teacher::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, l=1)
     if l == length(mind.layers)
-        δ = thoughtless_backprop(teacher, X, Y, 1)
-        dZ = 1
+        return thoughtless_backprop(teacher, X, Y, 1)
     else
         Z = mind.a(mind.weights[l]*X .+ mind.biases[l])
         δ = teaching_backprop!(mind, teacher, Z, Y, l+1)
-        dZ = mind.da(Z)
+        dZ =mind.da(Z)
+        ∂C = mind.weights[l]' * (δ .* dZ)
+        mind.biases[l] .-= mind.λ * sum(δ, dims=2)
+        mind.weights[l] .-=  mind.λ * (δ * X')
+        return ∂C
     end
-    ∂C = mind.weights[l]' * (δ .* dZ)
-    mind.biases[l] .-= mind.λ * sum(δ, dims=2)
-    mind.weights[l] .-=  mind.λ * (δ * X')
-    return ∂C
 end
+
 
 
 function predict(mind::Mind, X::Matrix{Float32}, l=1)
