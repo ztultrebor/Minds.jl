@@ -27,8 +27,8 @@ relu(X) = max.(X, 0)
 σ(X) = 1 ./ (1 .+ exp.(-X))
 
 function d(f::Function)
-    if f==relu
-        drelu(Z) = max.(sign.(Z), 0)
+    if f == relu
+        drelu(Z) = sign.(Z)
         return drelu
     elseif f == σ
         dσ(Z) = Z .* (1 .- Z)
@@ -46,11 +46,12 @@ function backprop!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, l=1)
     if l == length(mind.layers) - 1
         Z = mind.f(mind.weights[l]*X .+ mind.biases[l])
         δ = (Z .- Y) / size(Z,2)
+        dZ = 1
     else
         Z = mind.a(mind.weights[l]*X .+ mind.biases[l])
         δ = backprop!(mind, Z, Y, l+1)
+        dZ = mind.da(Z)
     end
-    dZ = mind.da(Z)
     ∂C = mind.weights[l]' * (δ .* dZ)
     mind.biases[l] .-= mind.λ * sum(δ, dims=2)
     mind.weights[l] .-=  mind.λ * (δ * X')
@@ -61,11 +62,12 @@ function thoughtless_backprop(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}
     if l == length(mind.layers) - 1
         Z = mind.f(mind.weights[l]*X .+ mind.biases[l])
         δ = (Z .- Y) / size(Z,2)
+        dZ = 1
     else
         Z = mind.a(mind.weights[l]*X .+ mind.biases[l])
         δ = backprop!(mind, Z, Y, l+1)
+        dZ = mind.da(Z)
     end
-    dZ = mind.da(Z)
     ∂C = mind.weights[l]' * (δ .* dZ)
     return ∂C
 end
@@ -74,10 +76,10 @@ function teaching_backprop!(mind::Mind, teacher::Mind, X::Matrix{Float32}, Y::Ma
     if l == length(mind.layers)
         return thoughtless_backprop(teacher, X, Y, 1)
     else
-        Z = mind.a(mind.weights[l]*X .+ mind.biases[l])
+        Z = relu(mind.weights[l]*X .+ mind.biases[l])
         δ = teaching_backprop!(mind, teacher, Z, Y, l+1)
     end
-    dZ = mind.da(Z)
+    dZ = max.(sign.(Z), 0)
     ∂C = mind.weights[l]' * (δ .* dZ)
     mind.biases[l] .-= mind.λ * sum(δ, dims=2)
     mind.weights[l] .-=  mind.λ * (δ * X')
