@@ -79,7 +79,7 @@ function teaching_backprop!(mind::Mind, teacher::Mind, X::Matrix{Float32}, Y::Ma
     else
         Z = relu(mind.weights[l]*X .+ mind.biases[l])
         δ = teaching_backprop!(mind, teacher, Z, Y, l+1)
-        dZ = max.(sign.(Z), 0)
+        dZ = mind.da(Z)
     end
     ∂C = mind.weights[l]' * (δ .* dZ)
     mind.biases[l] .-= mind.λ * sum(δ, dims=2)
