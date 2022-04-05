@@ -77,7 +77,7 @@ function teaching_backprop!(mind::Mind, teacher::Mind, X::Matrix{Float32}, Y::Ma
         δ = thoughtless_backprop(teacher, X, Y, 1)
         dZ = 1
     else
-        Z = relu(mind.weights[l]*X .+ mind.biases[l])
+        Z = mind.a(mind.weights[l]*X .+ mind.biases[l])
         δ = teaching_backprop!(mind, teacher, Z, Y, l+1)
         dZ = mind.da(Z)
     end
