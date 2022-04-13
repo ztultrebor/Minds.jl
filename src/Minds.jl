@@ -41,6 +41,25 @@ function HiddenLayer(n; f=relu, learning=true, λ=0.01)
                         f, Z->d(f)(Z), learning, λ)
 end
 
+mutable struct ConvolutionalLayer <: Layer
+    filterx::Int
+    filtery::Int 
+    depth::Int
+    imagex::Int
+    imagey::Int
+    n::Int
+    weights::Vector{Matrix{Float32}}
+    biases::Vector{Vector{Float32}}
+    f::Function
+    df::Function
+    learning::Bool
+    λ::Float32
+end
+function ConvolutionalLayer(filterx, filtery, depth, imagex, imagey, ; f=relu, learning=true, λ=0.01)
+    return ConvolutionalLayer(n, filterx, filtery, depth, imagex, imagey, Matrix{Float32}(undef,0,0), Vector{Float32}(undef,0,0), 
+                        f, Z->d(f)(Z), learning, λ)
+end
+
 mutable struct Mind
     layers::Vector{Layer}
 end
