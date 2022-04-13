@@ -23,7 +23,7 @@ mutable struct OutputLayer <: Layer
     λ::Float32
 end
 function OutputLayer(n; f=softmax, score=cross_entropy, learning=true, λ=0.01)
-    return OutputLayer(n, Matrix{Float32}(undef,0,0), Vector{Float32}(undef,0,0), 
+    return OutputLayer(n, Matrix{Float32}(undef,0,0), Vector{Float32}(undef,0), 
                         f, score, (P,Y)->((P .- Y) / size(P,2)), learning, λ)
 end
 
@@ -37,7 +37,7 @@ mutable struct HiddenLayer <: Layer
     λ::Float32
 end
 function HiddenLayer(n; f=relu, learning=true, λ=0.01)
-    return HiddenLayer(n, Matrix{Float32}(undef,0,0), Vector{Float32}(undef,0,0), 
+    return HiddenLayer(n, Matrix{Float32}(undef,0,0), Vector{Float32}(undef,0), 
                         f, Z->d(f)(Z), learning, λ)
 end
 
@@ -56,7 +56,7 @@ mutable struct ConvolutionalLayer <: Layer
     λ::Float32
 end
 function ConvolutionalLayer(filterx, filtery, depth, imagex, imagey, ; f=relu, learning=true, λ=0.01)
-    return ConvolutionalLayer(n, filterx, filtery, depth, imagex, imagey, Matrix{Float32}(undef,0,0), Vector{Float32}(undef,0,0), 
+    return ConvolutionalLayer(n, filterx, filtery, depth, imagex, imagey, Matrix{Float32}(undef,0,0), Vector{Float32}(undef,0), 
                         f, Z->d(f)(Z), learning, λ)
 end
 
