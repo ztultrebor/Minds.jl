@@ -14,8 +14,8 @@ end
 
 mutable struct OutputLayer <: Layer
     nodes::Int
-    weights::Vector{Matrix{Float32}}
-    biases::Vector{Vector{Float32}}
+    weights::Matrix{Float32}
+    biases::Vector{Float32}
     f::Function
     score::Function
     df::Function
@@ -29,8 +29,8 @@ end
 
 mutable struct HiddenLayer <: Layer
     nodes::Int
-    weights::Vector{Matrix{Float32}}
-    biases::Vector{Vector{Float32}}
+    weights::Matrix{Float32}
+    biases::Vector{Float32}
     f::Function
     df::Function
     learning::Bool
@@ -48,8 +48,8 @@ mutable struct ConvolutionalLayer <: Layer
     imagex::Int
     imagey::Int
     n::Int
-    weights::Vector{Matrix{Float32}}
-    biases::Vector{Vector{Float32}}
+    weights::Matrix{Float32}
+    biases::Vector{Float32}
     f::Function
     df::Function
     learning::Bool
