@@ -112,7 +112,7 @@ function backprop!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, l=1)
         δ = backprop!(mind, Z, Y, l+1)
         dZ = mind.layers[l].df(Z)
     end
-    ∂C = mind.weights' * (δ .* dZ)
+    ∂C = mind.layers[l].weights' * (δ .* dZ)
     if mind.layers[l].learning
         mind.layers[l].biases .-= mind.layers[l].λ * sum(δ, dims=2)
         mind.layers[l].weights .-=  mind.layers[l].λ * (δ * X')
