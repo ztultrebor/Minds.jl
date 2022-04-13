@@ -119,11 +119,7 @@ function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32},
     training_skorz = []
     test_skorz = []
     for cycle ∈ 1:cycles
-        for randindices = batch(size(X,2), 128)
-            x = X[:, randindices]
-            y = Y[:, randindices]
-            backprop!(mind, x, y, 1)
-        end
+        backprop!(mind, x, y, 1)
         push!(training_skorz, mind.layers[end].score(predict(mind, X), Y))
         push!(test_skorz, mind.layers[end].score(predict(mind, X2), Y2))
     end
