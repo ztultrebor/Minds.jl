@@ -64,18 +64,18 @@ mutable struct Mind
     layers::Vector{Layer}
 end
 
-function Mind(layers)
+function interconnect(layers::Vector{Layer})
     for (l_out, l_in) in zip(layers[2:end], layers[1:end-1])
         if typeof(l_out) == HiddenLayer
             l_out.weights = randn(l_out.n, l_in.n) / √l_in.n
             l_out.biases = randn(l_out.n)
         elseif typeof(l_out) == ConvolutionalLayer
-            l_out.weights = randn(l_out.filterx*l_out.filtery*l_out.depth, l_in.n) / √l_in.n
+            l_out.weights = randn(l_out.depth), l_out.filterx*l_out.filtery / √(l_out.filterx*l_out.filtery)
             l_out.biases = randn(l_out.n)
         elseif typeof(l_out) == OutputLayer
             l_out.weights = randn(l_out.n, l_in.n) / √l_in.n
             l_out.biases = randn(l_out.n)
-            return Mind(layers)
+            return layers
         end
     end
 end
