@@ -130,4 +130,15 @@ function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32},
     return training_skorz, test_skorz
 end
 
+function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, cycles::Int)
+training_skorz = []
+test_skorz = []
+for cycle ∈ 1:cycles
+    backprop!(mind, X,Y, 1)
+end
+push!(training_skorz, mind.layers[end].score(predict(mind, X), Y))
+end
+return training_skorz
+end
+
 end # module
