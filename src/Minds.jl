@@ -144,21 +144,25 @@ function batch(N, n)
 end
 
 function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32},  
-                X2::Matrix{Float32}, Y2::Matrix{Float32}, cycles::Int)
+                X2::Matrix{Float32}, Y2::Matrix{Float32}; cycles=1; batchsize=128)
     training_skorz = []
     test_skorz = []
-    for cycle ∈ 1:cycles
-        backprop!(mind, X, Y, 1)
+    for _ ∈ 1:cycles
+        for indices ∈ batch(size(X,2), batchsize)
+            backprop!(mind, X[:, indices], Y[:, indices], 1)
+        end
         push!(training_skorz, mind.layers[end].score(predict(mind, X), Y))
         push!(test_skorz, mind.layers[end].score(predict(mind, X2), Y2))
     end
     return training_skorz, test_skorz
 end
 
-function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, cycles::Int)
+function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}; cycles=1; batchsize=128)
     training_skorz = []
-    for cycle ∈ 1:cycles
-        backprop!(mind, X,Y, 1)
+    for _ ∈ 1:cycles
+        for indices ∈ batch(size(X,2), batchsize)
+            backprop!(mind, X[:, indices], Y[:, indices], 1)
+        end
         push!(training_skorz, mind.layers[end].score(predict(mind, X), Y))
     end
     return training_skorz
