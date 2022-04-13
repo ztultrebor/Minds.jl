@@ -1,6 +1,6 @@
 module Minds
 
-export Mind, InputLayer, OutputLayer, HiddenLayer,
+export Mind, InputLayer, OutputLayer, HiddenLayer, interconnect,
         learn!, predict, 
         relu, σ, softmax, cross_entropy
 
