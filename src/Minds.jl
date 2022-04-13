@@ -14,41 +14,48 @@ end
 
 mutable struct OutputLayer <: Layer
     nodes::Int
+    weights::Vector{Matrix{Float32}}
+    biases::Vector{Vector{Float32}}
     f::Function
     score::Function
     df::Function
     learning::Bool
     λ::Float32
 end
-OutputLayer(n, f, score, learning=true, λ=0.01) = OutputLayer(n, f, score, (P,Y)->((P .- Y) / size(P,2)), learning, λ)
-
+function OutputLayer(n; f=softmax, score=cross_entropy, learning=true, λ=0.01)
+    return OutputLayer(n, Matrix{Float32}(undef,0,0), Vector{Float32}(undef,0,0), 
+                        f, score, (P,Y)->((P .- Y) / size(P,2)), learning, λ)
+end
 
 mutable struct HiddenLayer <: Layer
     nodes::Int
+    weights::Vector{Matrix{Float32}}
+    biases::Vector{Vector{Float32}}
     f::Function
     df::Function
     learning::Bool
     λ::Float32
 end
-HiddenLayer(n, f, learning=true, λ=0.01) = HiddenLayer(n, f, Z->d(f)(Z), learning, λ)
+function HiddenLayer(n; f=relu, learning=true, λ=0.01)
+    return HiddenLayer(n, Matrix{Float32}(undef,0,0), Vector{Float32}(undef,0,0), 
+                        f, Z->d(f)(Z), learning, λ)
+end
 
 mutable struct Mind
     layers::Vector{Layer}
-    weights::Vector{Matrix{Float32}}
-    biases::Vector{Vector{Float32}}
 end
 
 function Mind(layers)
-    l =  length(layers) - 1
-    ws = Vector{Matrix{Float32}}(undef,l)
-    bs = Vector{Vector{Float32}}(undef, l)
-    for i ∈ 1:l
-        nout = layers[i+1].nodes 
-        nin = layers[i].nodes 
-        ws[i] = randn(nout, nin) / √nin
-        bs[i] = randn(nout)
+    for l_out, l_in in zip(layers[2:end], layers[1:end-1])
+        if typeof(l_out) == HiddenLayer
+            l_out.weights = randn(nout, nin) / √nin
+            l_out.biases = randn(nout)
+        elseif typeof(l_out) == OutputLayer
+            l_out.weights = randn(nout, nin) / √nin
+            l_out.biases = randn(nout)
+            return Mind(layers, ws, bs)
+        end
     end
-    return Mind(layers, ws, bs)
 end
 
 relu(X) = max.(X, 0)
