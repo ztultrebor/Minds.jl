@@ -69,7 +69,7 @@ function Mind(layers)
         if typeof(l_out) == HiddenLayer
             l_out.weights = randn(l_out.n, l_in.n) / √l_in.n
             l_out.biases = randn(l_out.n)
-        if typeof(l_out) == ConvolutionalLayer
+        elseif typeof(l_out) == ConvolutionalLayer
             l_out.weights = randn(filterx*filtey*depth, l_in.n) / √l_in.n
             l_out.biases = randn(nout)
         elseif typeof(l_out) == OutputLayer
