@@ -100,6 +100,8 @@ function softmax(X)
     return E ./ M
 end
 
+cross_entropy(P::Matrix{Float32}, Y::Matrix{Float32}) = -sum(Y .* log.(P .+ eps())) / size(Y,2)
+
 function backprop!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, l=1)
     if typeof(mind.layers[l]) == InputLayer 
         return backprop!(mind, X, Y, l+1)
@@ -130,8 +132,6 @@ function predict(mind::Mind, X::Matrix{Float32}, l=1)
         return predict(mind, Z, l+1)
     end
 end
-
-cross_entropy(P::Matrix{Float32}, Y::Matrix{Float32}) = -sum(Y .* log.(P .+ eps())) / size(Y,2)
 
 function batch(N, n)
     random_sort = sort!([(rand(),i) for i ∈ 1:N])
