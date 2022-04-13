@@ -144,7 +144,7 @@ function batch(N, n)
 end
 
 function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32},  
-                X2::Matrix{Float32}, Y2::Matrix{Float32}; cycles=1; batchsize=128)
+                X2::Matrix{Float32}, Y2::Matrix{Float32}; cycles=1, batchsize=128)
     training_skorz = []
     test_skorz = []
     for _ ∈ 1:cycles
@@ -157,7 +157,7 @@ function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32},
     return training_skorz, test_skorz
 end
 
-function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}; cycles=1; batchsize=128)
+function learn!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}; cycles=1, batchsize=128)
     training_skorz = []
     for _ ∈ 1:cycles
         for indices ∈ batch(size(X,2), batchsize)
