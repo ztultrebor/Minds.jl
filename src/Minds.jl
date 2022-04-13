@@ -67,12 +67,15 @@ end
 function Mind(layers)
     for (l_out, l_in) in zip(layers[2:end], layers[1:end-1])
         if typeof(l_out) == HiddenLayer
-            l_out.weights = randn(nout, nin) / √nin
+            l_out.weights = randn(l_out.n, l_in.n) / √l_in.n
+            l_out.biases = randn(l_out.n)
+        if typeof(l_out) == ConvolutionalLayer
+            l_out.weights = randn(filterx*filtey*depth, l_in.n) / √l_in.n
             l_out.biases = randn(nout)
         elseif typeof(l_out) == OutputLayer
-            l_out.weights = randn(nout, nin) / √nin
-            l_out.biases = randn(nout)
-            return Mind(layers, ws, bs)
+            l_out.weights = randn(l_out.n, l_in.n) / √l_in.n
+            l_out.biases = randn(l_out.n)
+            return Mind(layers)
         end
     end
 end
