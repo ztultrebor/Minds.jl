@@ -109,6 +109,11 @@ function backprop!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, l=1)
         Z = mind.layers[l].f(mind.layers[l].weights*X .+ mind.layers[l].biases)
         δ = mind.layers[l].df(Z, Y)
         dZ = 1
+    elseif typeof(mind.layers[l]) == ConvolutionalLayer 
+        convolutes = Matrix{Float32}(undef, 0, size(X,2)
+        # Z = mind.layers[l].f(mind.layers[l].weights*X .+ mind.layers[l].biases)
+        δ = backprop!(mind, Z, Y, l+1)
+        dZ = mind.layers[l].df(Z)
     else
         Z = mind.layers[l].f(mind.layers[l].weights*X .+ mind.layers[l].biases)
         δ = backprop!(mind, Z, Y, l+1)
