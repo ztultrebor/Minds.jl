@@ -129,17 +129,19 @@ function predict(mind::Mind, X::Matrix{Float32}, l=1)
         return mind.layers[l].f(mind.layers[l].weights*X .+ mind.layers[l].biases)
     elseif typeof(mind.layers[l]) == ConvolutionalLayer 
         convolutes = zeros(Float32, mind.layers[l].nodes, size(X,2))
-        for raster_y ∈ 1:mind.layers[l].imagey-mind.layers[l].filtery+1
-            y_coords = raster_y-1:raster_y+mind.layers[l].filtery-2
+        for raster_y ∈ 0:mind.layers[l].imagey-mind.layers[l].filtery
+            y_coords = raster_y:raster_y+mind.layers[l].filtery-1
             for raster_x ∈ 1:mind.layers[l].imagex-mind.layers[l].filterx+1
                 x_coords = raster_x:raster_x+mind.layers[l].filterx-1
                 image_indices = [x + y * mind.layers[l].imagex for x ∈ x_coords for y ∈ y_coords]
-                output_indices = [raster_x + (raster_y + d  * mind.layers[l].imagey) * mind.layers[l].imagex for 
-                                    d ∈ 0:mind.layers[l].depth-1]
-                convolutes[output_indices,:] .+= mind.layers[l].weights .* X[image_indices,:]
+                output_indices = [raster_x + 
+                                    (raster_y + d  * (mind.layers[l].imagey - mind.layers[l].filtery + 1)) 
+                                    * (mind.layers[l].imagex - mind.layers[l].filterx + 1) for 
+                                 d ∈ 0:mind.layers[l].depth-1]
+                convolutes[output_indices,:] .+= (mind.layers[l].weights .* X[image_indices,:]  .+ mind.layers[l].biases)
             end
         end
-        Z = mind.layers[l].f(convolutes .+ mind.layers[l].biases)
+        Z = mind.layers[l].f(convolutes)
         return predict(mind, Z, l+1)
     else
         Z = mind.layers[l].f(mind.layers[l].weights*X .+ mind.layers[l].biases)
