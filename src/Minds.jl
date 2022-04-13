@@ -46,7 +46,7 @@ mutable struct Mind
 end
 
 function Mind(layers)
-    for l_out, l_in in zip(layers[2:end], layers[1:end-1])
+    for (l_out, l_in) in zip(layers[2:end], layers[1:end-1])
         if typeof(l_out) == HiddenLayer
             l_out.weights = randn(nout, nin) / √nin
             l_out.biases = randn(nout)
