@@ -55,9 +55,9 @@ mutable struct ConvolutionalLayer <: Layer
     learning::Bool
     λ::Float32
 end
-function ConvolutionalLayer(filterx, filtery, depth, imagex, imagey, ; f=relu, learning=true, λ=0.01)
-    return ConvolutionalLayer(n, filterx, filtery, depth, imagex, imagey, Matrix{Float32}(undef,0,0), Vector{Float32}(undef,0), 
-                        f, Z->d(f)(Z), learning, λ)
+function ConvolutionalLayer(filterx, filtery, depth, imagex, imagey; f=relu, learning=true, λ=0.01)
+    return ConvolutionalLayer(filterx, filtery, depth, imagex, imagey, (imagex-filterx+1)*(imagey-filtery+1)*depth,
+                                Matrix{Float32}(undef,0,0), Vector{Float32}(undef,0), f, Z->d(f)(Z), learning, λ)
 end
 
 mutable struct Mind
