@@ -109,11 +109,6 @@ function backprop!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, l=1)
         Z = mind.layers[l].f(mind.layers[l].weights*X .+ mind.layers[l].biases)
         δ = mind.layers[l].df(Z, Y)
         dZ = 1
-    elseif typeof(mind.layers[l]) == ConvolutionalLayer 
-        convolutes = Matrix{Float32}(undef, 0, size(X,2)
-        # Z = mind.layers[l].f(mind.layers[l].weights*X .+ mind.layers[l].biases)
-        δ = backprop!(mind, Z, Y, l+1)
-        dZ = mind.layers[l].df(Z)
     else
         Z = mind.layers[l].f(mind.layers[l].weights*X .+ mind.layers[l].biases)
         δ = backprop!(mind, Z, Y, l+1)
@@ -132,6 +127,20 @@ function predict(mind::Mind, X::Matrix{Float32}, l=1)
         return predict(mind, X, l+1)
     elseif typeof(mind.layers[l]) == OutputLayer 
         return mind.layers[l].f(mind.layers[l].weights*X .+ mind.layers[l].biases)
+    elseif typeof(mind.layers[l]) == ConvolutionalLayer 
+        convolutes = zeros(Float32, mind.layers[l].nodes, size(X,2))
+        for raster_y ∈ 1:mind.layers[l].imagey-mind.layers[l].filtery+1
+            y_coords = raster_y-1:raster_y+mind.layers[l].filtery-2
+            for raster_x ∈ 1:mind.layers[l].imagex-mind.layers[l].filterx+1
+                x_coords = raster_x:raster_x+mind.layers[l].filterx-1
+                image_indices = [x + y * mind.layers[l].imagex for x ∈ x_coords for y ∈ y_coords]
+                output_indices = [raster_x + (raster_y + d  * mind.layers[l].imagey) * mind.layers[l].imagex for 
+                                    d ∈ 0:mind.layers[l].depth-1]
+                convolutes[output_indices,:] .+= mind.layers[l].weights .* X[image_indices,:]
+            end
+        end
+        Z = mind.layers[l].f(convolutes .+ mind.layers[l].biases)
+        return predict(mind, Z, l+1)
     else
         Z = mind.layers[l].f(mind.layers[l].weights*X .+ mind.layers[l].biases)
         return predict(mind, Z, l+1)
