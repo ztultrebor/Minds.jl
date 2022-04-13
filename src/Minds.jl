@@ -47,7 +47,7 @@ mutable struct ConvolutionalLayer <: Layer
     depth::Int
     imagex::Int
     imagey::Int
-    n::Int
+    nodes::Int
     weights::Matrix{Float32}
     biases::Vector{Float32}
     f::Function
@@ -67,14 +67,14 @@ end
 function interconnect(layers::Vector{Layer})
     for (l_out, l_in) in zip(layers[2:end], layers[1:end-1])
         if typeof(l_out) == HiddenLayer
-            l_out.weights = randn(l_out.n, l_in.n) / √l_in.n
-            l_out.biases = randn(l_out.n)
+            l_out.weights = randn(l_out.nodes, l_in.nodes) / √l_in.nodes
+            l_out.biases = randn(l_out.nodes)
         elseif typeof(l_out) == ConvolutionalLayer
             l_out.weights = randn(l_out.depth), l_out.filterx*l_out.filtery / √(l_out.filterx*l_out.filtery)
-            l_out.biases = randn(l_out.n)
+            l_out.biases = randn(l_out.nodes)
         elseif typeof(l_out) == OutputLayer
-            l_out.weights = randn(l_out.n, l_in.n) / √l_in.n
-            l_out.biases = randn(l_out.n)
+            l_out.weights = randn(l_out.nodes, l_in.nodes) / √l_in.nodes
+            l_out.biases = randn(l_out.nodes)
             return layers
         end
     end
