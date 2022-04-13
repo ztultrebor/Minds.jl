@@ -104,18 +104,18 @@ function backprop!(mind::Mind, X::Matrix{Float32}, Y::Matrix{Float32}, l=1)
     if typeof(mind.layers[l]) == InputLayer 
         return backprop!(mind, X, Y, l+1)
     elseif typeof(mind.layers[l]) == OutputLayer 
-        Z = mind.layers[l].f(mind.weights[l-1]*X .+ mind.biases[l-1])
+        Z = mind.layers[l].f(mind.layers[l].weights[l-1]*X .+ mind.layers[l].biases[l-1])
         δ = mind.layers[l].df(Z, Y)
         dZ = 1
     else
-        Z = mind.layers[l].f(mind.weights[l-1]*X .+ mind.biases[l-1])
+        Z = mind.layers[l].f(mind.layers[l].weights[l-1]*X .+ mind.layers[l].biases[l-1])
         δ = backprop!(mind, Z, Y, l+1)
         dZ = mind.layers[l].df(Z)
     end
     ∂C = mind.weights[l-1]' * (δ .* dZ)
     if mind.layers[l].learning
-        mind.biases[l-1] .-= mind.layers[l].λ * sum(δ, dims=2)
-        mind.weights[l-1] .-=  mind.layers[l].λ * (δ * X')
+        mind.layers[l].biases[l-1] .-= mind.layers[l].λ * sum(δ, dims=2)
+        mind.layers[l].weights[l-1] .-=  mind.layers[l].λ * (δ * X')
     end
     return ∂C
 end
@@ -124,9 +124,9 @@ function predict(mind::Mind, X::Matrix{Float32}, l=1)
     if typeof(mind.layers[l]) == InputLayer 
         return predict(mind, X, l+1)
     elseif typeof(mind.layers[l]) == OutputLayer 
-        return mind.layers[l].f(mind.weights[l-1]*X .+ mind.biases[l-1])
+        return mind.layers[l].f(mind.layers[l].weights[l-1]*X .+ mind.layers[l].biases[l-1])
     else
-        Z = mind.layers[l].f(mind.weights[l-1]*X .+ mind.biases[l-1])
+        Z = mind.layers[l].f(mind.layers[l].weights[l-1]*X .+ mind.layers[l].biases[l-1])
         return predict(mind, Z, l+1)
     end
 end
