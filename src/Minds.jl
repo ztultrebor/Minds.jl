@@ -71,7 +71,7 @@ function interconnect(layers::Vector{Layer})
             l_out.weights = randn(l_out.nodes, l_in.nodes) / √l_in.nodes
             l_out.biases = randn(l_out.nodes)
         elseif typeof(l_out) == ConvolutionalLayer
-            l_out.weights = randn(l_out.filterx*l_out.filtery, l_out.depth) / √(l_out.filterx*l_out.filtery)
+            l_out.weights = randn(l_out.depth, l_out.filterx*l_out.filtery) / √(l_out.filterx*l_out.filtery)
             l_out.biases = randn(l_out.depth)
         elseif typeof(l_out) == OutputLayer
             l_out.weights = randn(l_out.nodes, l_in.nodes) / √l_in.nodes
