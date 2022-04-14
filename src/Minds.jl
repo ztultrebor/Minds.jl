@@ -139,7 +139,6 @@ function predict(mind::Mind, X::Matrix{Float32}, l=1)
                                     (raster_y + d  * (mind.layers[l].imagey - mind.layers[l].filtery + 1)) *
                                     (mind.layers[l].imagex - mind.layers[l].filterx + 1) for 
                                  d ∈ 0:mind.layers[l].depth-1]
-                                 display(image_indices)
                 convolutes[output_indices,:] .+= (mind.layers[l].weights .* X[image_indices,:]  .+ mind.layers[l].biases)
             end
         end
