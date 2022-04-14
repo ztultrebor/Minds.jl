@@ -140,7 +140,7 @@ function predict(mind::Mind, X::Matrix{Float32}, l=1)
                                     (mind.layers[l].imagex - mind.layers[l].filterx + 1) for 
                                  d ∈ 0:mind.layers[l].depth-1]
                                  display(image_indices)
-                convolutes[output_indices,:] .+= (X[image_indices,:] * mind.layers[l].weights  .+ mind.layers[l].biases)
+                convolutes[output_indices,:] .+= (mind.layers[l].weights .* X[image_indices,:]  .+ mind.layers[l].biases)
             end
         end
         Z = mind.layers[l].f(convolutes)
